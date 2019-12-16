@@ -5,6 +5,6 @@ namespace LocalDiscogsApi.Config
         public string Url { get; set; }
         public string UserAgent { get; set; }
         public string RatelimitRemainingHeaderName { get; set; }
-        public string RatelimitTimeout { get; set; }
+        public int RatelimitTimeout { get; set; }
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using LocalDiscogsApi.Config;
+using LocalDiscogsApi.Middleware;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -31,7 +32,7 @@ namespace LocalDiscogsApi
                 {
                     c.BaseAddress = new Uri(Configuration["DiscogsApi:Url"]);
                     c.DefaultRequestHeaders.Add("User-Agent", Configuration["DiscogsApi:UserAgent"]);
-                });
+                }).AddHttpMessageHandler<PreventRateLimiterHandler>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
