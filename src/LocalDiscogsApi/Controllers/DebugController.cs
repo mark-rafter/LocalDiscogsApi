@@ -1,9 +1,6 @@
-using LocalDiscogsApi.Database;
 using LocalDiscogsApi.Models;
 using LocalDiscogsApi.Services;
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace LocalDiscogsApi.Controllers
