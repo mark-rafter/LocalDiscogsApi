@@ -1,12 +1,14 @@
 using System;
 using LocalDiscogsApi.Clients;
 using LocalDiscogsApi.Config;
+using LocalDiscogsApi.Database;
 using LocalDiscogsApi.Middleware;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 
 namespace LocalDiscogsApi
 {
@@ -24,6 +26,12 @@ namespace LocalDiscogsApi
         public void ConfigureServices(IServiceCollection services)
         {
             services.Configure<DiscogsApiOptions>(Configuration.GetSection(nameof(DiscogsApiOptions)));
+            services.Configure<DatabaseOptions>(Configuration.GetSection(nameof(DatabaseOptions)));
+
+            services.AddSingleton<IDiscogsApiOptions>(sp => sp.GetRequiredService<IOptions<DiscogsApiOptions>>().Value);
+            services.AddSingleton<IDatabaseOptions>(sp => sp.GetRequiredService<IOptions<DatabaseOptions>>().Value);
+
+            services.AddSingleton<IDbContext, MongoDbContext>();
 
             services.AddControllers()
                 .AddNewtonsoftJson(options => options.UseMemberCasing());

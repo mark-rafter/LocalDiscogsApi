@@ -21,13 +21,13 @@ namespace LocalDiscogsApi.Middleware
         private readonly TimeSpan ratelimitTimeout;
         private readonly string ratelimitRemainingHeaderName;
 
-        public PreventRateLimiterHandler(IMemoryCache memoryCache, ITimerService timerService, IOptions<DiscogsApiOptions> discogsApiOptions)
+        public PreventRateLimiterHandler(IMemoryCache memoryCache, ITimerService timerService, IDiscogsApiOptions discogsApiOptions)
         {
             this.memoryCache = memoryCache ?? throw new ArgumentNullException(nameof(memoryCache));
             this.timerService = timerService ?? throw new ArgumentNullException(nameof(timerService));
 
-            this.ratelimitTimeout = TimeSpan.FromSeconds(discogsApiOptions.Value.RatelimitTimeout);
-            this.ratelimitRemainingHeaderName = discogsApiOptions.Value.RatelimitRemainingHeaderName;
+            this.ratelimitTimeout = TimeSpan.FromSeconds(discogsApiOptions.RatelimitTimeout);
+            this.ratelimitRemainingHeaderName = discogsApiOptions.RatelimitRemainingHeaderName;
         }
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
