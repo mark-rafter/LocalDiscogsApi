@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using LocalDiscogsApi.Exceptions;
 using Discogs = LocalDiscogsApi.Models.Discogs;
 
-namespace LocalDiscogsApi
+namespace LocalDiscogsApi.Clients
 {
     public interface IDiscogsClient
     {

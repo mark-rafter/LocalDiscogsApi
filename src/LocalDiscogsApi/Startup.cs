@@ -1,4 +1,5 @@
 using System;
+using LocalDiscogsApi.Clients;
 using LocalDiscogsApi.Config;
 using LocalDiscogsApi.Middleware;
 using Microsoft.AspNetCore.Builder;
@@ -26,6 +27,8 @@ namespace LocalDiscogsApi
 
             services.AddControllers()
                 .AddNewtonsoftJson(options => options.UseMemberCasing());
+
+            services.AddTransient<PreventRateLimiterHandler>();
 
             services
                 .AddHttpClient<IDiscogsClient, DiscogsClient>(c =>
