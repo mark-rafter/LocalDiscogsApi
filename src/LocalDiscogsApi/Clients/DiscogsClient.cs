@@ -11,8 +11,10 @@ namespace LocalDiscogsApi.Clients
 {
     public interface IDiscogsClient
     {
+        Task<Discogs.InventoryResponse> GetInventoryPageForUser(string userName, int pageNum);
         Task<Discogs.Inventory> GetInventoryForUser(string userName);
 
+        Task<Discogs.WantlistResponse> GetWantlistPageForUser(string userName, int pageNum);
         Task<Discogs.Wantlist> GetWantlistForUser(string userName);
     }
 
@@ -44,6 +46,11 @@ namespace LocalDiscogsApi.Clients
 
             using (HttpResponseMessage httpResponse = await httpClient.GetAsync(requestUrl))
             {
+                if (httpResponse.StatusCode == System.Net.HttpStatusCode.NotFound)
+                {
+                    return null;
+                }
+
                 if (!httpResponse.IsSuccessStatusCode)
                 {
                     throw new RestRequestException(httpResponse, await httpResponse.Content?.ReadAsStringAsync());
@@ -103,6 +110,38 @@ namespace LocalDiscogsApi.Clients
             Discogs.Listing[] listings = await GetPageItems<Discogs.Listing, Discogs.InventoryResponse>(requestUrl);
 
             return new Discogs.Inventory(listings);
+        }
+
+        public async Task<Discogs.WantlistResponse> GetWantlistPageForUser(string userName, int pageNum)
+        {
+            if (pageNum < 1)
+            {
+                throw new System.ArgumentOutOfRangeException(nameof(pageNum), pageNum.ToString(), $"{nameof(pageNum)} must be greater than 0");
+            }
+
+            var queryParams = new Dictionary<string, string>
+            {
+                { "per_page", "100" },
+                { "page", pageNum.ToString() }
+            };
+
+            string requestUrl = QueryHelpers.AddQueryString($"users/{userName}/inventory", queryParams);
+
+            using (HttpResponseMessage httpResponse = await httpClient.GetAsync(requestUrl))
+            {
+                if (httpResponse.StatusCode == System.Net.HttpStatusCode.NotFound)
+                {
+                    return null;
+                }
+
+                if (!httpResponse.IsSuccessStatusCode)
+                {
+                    throw new RestRequestException(httpResponse, await httpResponse.Content?.ReadAsStringAsync());
+                }
+
+                string responseString = await httpResponse.Content.ReadAsStringAsync();
+                return JsonConvert.DeserializeObject<Discogs.WantlistResponse>(responseString);
+            }
         }
 
         public async Task<Discogs.Wantlist> GetWantlistForUser(string userName)
