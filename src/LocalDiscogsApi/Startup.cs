@@ -31,14 +31,16 @@ namespace LocalDiscogsApi
 
             services.AddMemoryCache();
 
+            // config
             DiscogsApiOptions discogsApiOptions = Configuration.GetSection(nameof(DiscogsApiOptions)).Get<DiscogsApiOptions>();
-
-            //services.Configure<DiscogsApiOptions>(Configuration.GetSection(nameof(DiscogsApiOptions)));
-            services.Configure<DatabaseOptions>(Configuration.GetSection(nameof(DatabaseOptions)));
+            DatabaseOptions databaseOptions = Configuration.GetSection(nameof(DatabaseOptions)).Get<DatabaseOptions>();
+            VinylHubApiOptions vinylHubApiOptions = Configuration.GetSection(nameof(VinylHubApiOptions)).Get<VinylHubApiOptions>();
 
             services.AddSingleton<IDiscogsApiOptions>(sp => discogsApiOptions);
-            services.AddSingleton<IDatabaseOptions>(sp => sp.GetRequiredService<IOptions<DatabaseOptions>>().Value);
+            services.AddSingleton<IDatabaseOptions>(sp => databaseOptions);
+            services.AddSingleton<IVinylHubApiOptions>(sp => vinylHubApiOptions);
 
+            // services
             services.AddSingleton<IDbContext, MongoDbContext>();
             services.AddTransient<ITimerService, TimerService>();
             services.AddTransient<IWantlistService, WantlistService>();
@@ -49,12 +51,15 @@ namespace LocalDiscogsApi
 
             services.AddTransient<PreventRateLimiterHandler>();
 
+            // clients
             services
                 .AddHttpClient<IDiscogsClient, DiscogsClient>(c =>
                 {
                     c.BaseAddress = new Uri(discogsApiOptions.Url);
                     c.DefaultRequestHeaders.Add("User-Agent", discogsApiOptions.UserAgent);
                 }).AddHttpMessageHandler<PreventRateLimiterHandler>();
+
+            services.AddHttpClient<IVinylHubClient, VinylHubClient>(c => c.BaseAddress = new Uri(vinylHubApiOptions.Url));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
