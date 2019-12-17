@@ -27,12 +27,23 @@ namespace LocalDiscogsApi.Services
 
         public async Task<bool> Exists(string username)
         {
+            if (string.IsNullOrEmpty(username))
+            {
+                throw new ArgumentNullException(nameof(username));
+            }
+
             Models.Discogs.WantlistResponse response = await discogsClient.GetWantlistPageForUser(username, 1);
             return response != null;
         }
 
         public async Task<UserWantlist> Get(string username)
         {
+            // todo: replace with Exists(username) ?
+            if (string.IsNullOrEmpty(username))
+            {
+                throw new ArgumentNullException(nameof(username));
+            }
+
             UserWantlist existingWantlist = await dbContext.GetUserWantlist(username);
 
             if (existingWantlist == null)
@@ -41,13 +52,13 @@ namespace LocalDiscogsApi.Services
                 Discogs.Wantlist latestWantlist = await discogsClient.GetWantlistForUser(username);
 
                 var userWantlist = new UserWantlist(
-                        existingWantlist?.Id,
+                        null,
                         username,
                         latestWantlist.Select(w => w.ReleaseId),
                         DateTimeOffset.UtcNow);
 
-                // update db
-                await dbContext.SetUserWantlist(userWantlist);
+                // update db, populates userWantlist id.
+                userWantlist = await dbContext.SetUserWantlist(userWantlist);
 
                 return userWantlist;
             }
@@ -61,7 +72,7 @@ namespace LocalDiscogsApi.Services
 
         private bool IsExpired(DateTimeOffset? lastUpdated, int hours)
         {
-            return lastUpdated == null || lastUpdated < DateTimeOffset.Now.AddHours(-hours);
+            return lastUpdated == null || lastUpdated < DateTimeOffset.UtcNow.AddHours(-hours);
         }
     }
 }

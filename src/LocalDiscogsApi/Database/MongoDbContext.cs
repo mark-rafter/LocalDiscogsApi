@@ -69,11 +69,11 @@ namespace LocalDiscogsApi.Database
         {
             if (entity.Id == default)
             {
-                entity.CreatedOn = DateTimeOffset.Now;
+                entity.CreatedOn = DateTimeOffset.UtcNow;
             }
             else
             {
-                entity.ModifiedOn = DateTimeOffset.Now;
+                entity.ModifiedOn = DateTimeOffset.UtcNow;
             }
 
             ReplaceOneResult result = await collection.ReplaceOneAsync(

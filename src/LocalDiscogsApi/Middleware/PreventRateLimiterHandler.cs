@@ -49,7 +49,7 @@ namespace LocalDiscogsApi.Middleware
             {
                 /// wait until <see cref="ratelimitTimeout" /> has elapsed since the last request: 
                 /// RatelimitTimeout - (now - lastRequestTime)
-                DateTimeOffset nowUtc = DateTimeOffset.Now.ToUniversalTime();
+                DateTimeOffset nowUtc = DateTimeOffset.UtcNow;
 
                 TimeSpan timeToWait = ratelimitTimeout - (nowUtc - ratelimit.LastRequestTimeUtc);
 

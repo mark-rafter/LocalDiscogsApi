@@ -19,6 +19,11 @@ namespace LocalDiscogsApi.Controllers
         [HttpGet("wantlist/{username:length(128)}")]
         public async Task<ActionResult<UserWantlist>> GetWantlist(string username)
         {
+            if (string.IsNullOrEmpty(username))
+            {
+                return NotFound();
+            }
+
             var wantlistExists = await wantlistService.Exists(username);
 
             if (!wantlistExists)

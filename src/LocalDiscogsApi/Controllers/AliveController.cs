@@ -11,6 +11,7 @@ namespace LocalDiscogsApi.Controllers
         public IActionResult Get() =>
             Ok($"LocalDiscogsApi ({Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT")})" + Environment.NewLine
                 + "Service Status: 200 OK" + Environment.NewLine
-                + "Server Time: " + DateTime.Now.ToString("o"));
+                + "Server Time: " + DateTime.Now.ToString("o") + Environment.NewLine
+                + "UTC Time: " + DateTime.UtcNow.ToString("o"));
     }
 }

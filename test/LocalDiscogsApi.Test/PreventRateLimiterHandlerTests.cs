@@ -108,7 +108,7 @@ namespace LocalDiscogsApi.Test
         public async Task SendAsync_RateLimitHitMoreThan60sAgo_DoesNotDelay()
         {
             // Arrange
-            DateTimeOffset lastRequestTime = DateTimeOffset.Now.AddSeconds(-discogsApiOptions.RatelimitTimeout);
+            DateTimeOffset lastRequestTime = DateTimeOffset.UtcNow.AddSeconds(-discogsApiOptions.RatelimitTimeout);
 
             SetupInnerHandlerHttpResponseHeaders(0, lastRequestTime);
 
@@ -135,7 +135,7 @@ namespace LocalDiscogsApi.Test
         public async Task SendAsync_RateLimitHitLessThan60sAgo_DelaysForCorrectTime(int lastCallSecondsAgo, int expectedDelay)
         {
             // Arrange
-            DateTimeOffset lastRequestTime = DateTimeOffset.Now.AddSeconds(-lastCallSecondsAgo);
+            DateTimeOffset lastRequestTime = DateTimeOffset.UtcNow.AddSeconds(-lastCallSecondsAgo);
             TimeSpan expectedDelayLowerLimit = TimeSpan.FromSeconds(expectedDelay - 2);
             TimeSpan expectedDelayUpperLimit = TimeSpan.FromSeconds(expectedDelay);
 
