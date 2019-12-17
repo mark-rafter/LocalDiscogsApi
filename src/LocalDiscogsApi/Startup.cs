@@ -1,4 +1,5 @@
 using System;
+using AutoMapper;
 using LocalDiscogsApi.Clients;
 using LocalDiscogsApi.Config;
 using LocalDiscogsApi.Database;
@@ -26,6 +27,8 @@ namespace LocalDiscogsApi
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddAutoMapper(typeof(Helpers.MappingEntity));
+
             services.AddMemoryCache();
 
             DiscogsApiOptions discogsApiOptions = Configuration.GetSection(nameof(DiscogsApiOptions)).Get<DiscogsApiOptions>();
@@ -39,6 +42,7 @@ namespace LocalDiscogsApi
             services.AddSingleton<IDbContext, MongoDbContext>();
             services.AddTransient<ITimerService, TimerService>();
             services.AddTransient<IWantlistService, WantlistService>();
+            services.AddTransient<IInventoryService, InventoryService>();
 
             services.AddControllers()
                 .AddNewtonsoftJson(options => options.UseMemberCasing());

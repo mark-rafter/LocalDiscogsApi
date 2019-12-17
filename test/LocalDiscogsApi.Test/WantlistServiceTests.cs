@@ -6,7 +6,6 @@ using LocalDiscogsApi.Clients;
 using LocalDiscogsApi.Database;
 using LocalDiscogsApi.Models;
 using LocalDiscogsApi.Services;
-using LocalDiscogsApi.Test.Helpers;
 using Moq;
 using Xunit;
 using Discogs = LocalDiscogsApi.Models.Discogs;
@@ -132,7 +131,7 @@ namespace LocalDiscogsApi.Test
         public async Task Get_WantlistDoesNotExistInDb_ReturnsWantlistFromDiscogs()
         {
             // Arrange
-            Discogs.Wantlist discogsWantlist = new Discogs.Wantlist(new Discogs.Want[] { TestData.Want1, TestData.Want2 });
+            Discogs.Wantlist discogsWantlist = new Discogs.Wantlist(TestData.Want1, TestData.Want2);
 
             UserWantlist expectedWantlist = new UserWantlist(
                 id: "generatedId",
@@ -164,52 +163,6 @@ namespace LocalDiscogsApi.Test
 
         private static class TestData
         {
-            public static Discogs.Listing Listing1 =>
-                new ListingBuilder()
-                .WithListingId(1001)
-                .WithReleaseId(101)
-                .WithCondition("Mint (M)", "Mint (M)")
-                .WithPrice("GBP", 19.99m)
-                .WithSeller(FakeSeller1, "https://img.fake.fake/aaa/1.jpg")
-                .WithReleaseDescription("Listing 1 - Listing One [1991]")
-                .Build();
-
-            public static Discogs.Listing Listing2 =>
-                new ListingBuilder()
-                .WithListingId(1002)
-                .WithReleaseId(102)
-                .WithCondition("Very Good (VG+)", "Near Mint (NM or M-)")
-                .WithPrice("GBP", 6.99m)
-                .WithSeller(FakeSeller1, "https://img.fake.fake/aaa/2.jpg")
-                .WithReleaseDescription("Listing 2 - Listing Two [1992]")
-                .Build();
-
-            public static Discogs.Listing Listing3 =>
-                new ListingBuilder()
-                .WithListingId(1003)
-                .WithReleaseId(103)
-                .WithCondition("Very Good (VG+)", "Near Mint (NM or M-)")
-                .WithPrice("USD", 8.99m)
-                .WithSeller(FakeSeller2, "https://img.fake.fake/aaa/3.jpg")
-                .WithReleaseDescription("Listing 3 - Listing Three [1993]")
-                .Build();
-
-            public static Discogs.Listing Listing4 =>
-                new ListingBuilder()
-                .WithListingId(1004)
-                .WithReleaseId(104)
-                .WithCondition("Mint (M)", "Near Mint (NM or M-)")
-                .WithPrice("USD", 15.99m)
-                .WithSeller(FakeSeller2, "https://img.fake.fake/aaa/4.jpg")
-                .WithReleaseDescription("Listing 4 - Listing Four [1994]")
-                .Build();
-
-            public static Discogs.Listing Listing5 =>
-                new ListingBuilder()
-                .WithListingId(1005)
-                .WithReleaseId(105)
-                .Build();
-
             public static Discogs.WantlistResponse WantlistRespone =>
                 new Discogs.WantlistResponse(
                     new Discogs.Want[] { Want1 },
@@ -225,9 +178,6 @@ namespace LocalDiscogsApi.Test
             public const long ReleaseId3 = 69482533;
 
             public const string FakeUser = "fakeUser123";
-
-            public const string FakeSeller1 = "fakeSeller1";
-            public const string FakeSeller2 = "fakeSeller2";
         }
     }
 }

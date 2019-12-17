@@ -1,4 +1,6 @@
 ﻿using System;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
 
 namespace LocalDiscogsApi.Models
 {
@@ -14,6 +16,7 @@ namespace LocalDiscogsApi.Models
 
         public string SleeveCondition { get; private set; }
 
+        [BsonRepresentation(BsonType.String)]
         public DateTimeOffset Posted { get; private set; }
 
         public string Price { get; private set; }

@@ -5,6 +5,7 @@
     <UserSecretsId>2155301e-652a-4fd0-a5e3-393c587a38eb</UserSecretsId>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="7.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="3.1.0" />
     <PackageReference Include="MongoDB.Driver" Version="2.10.0" />
   </ItemGroup>
