@@ -3,6 +3,7 @@ using LocalDiscogsApi.Clients;
 using LocalDiscogsApi.Config;
 using LocalDiscogsApi.Database;
 using LocalDiscogsApi.Middleware;
+using LocalDiscogsApi.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -25,13 +26,19 @@ namespace LocalDiscogsApi
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            services.Configure<DiscogsApiOptions>(Configuration.GetSection(nameof(DiscogsApiOptions)));
+            services.AddMemoryCache();
+
+            DiscogsApiOptions discogsApiOptions = Configuration.GetSection(nameof(DiscogsApiOptions)).Get<DiscogsApiOptions>();
+
+            //services.Configure<DiscogsApiOptions>(Configuration.GetSection(nameof(DiscogsApiOptions)));
             services.Configure<DatabaseOptions>(Configuration.GetSection(nameof(DatabaseOptions)));
 
-            services.AddSingleton<IDiscogsApiOptions>(sp => sp.GetRequiredService<IOptions<DiscogsApiOptions>>().Value);
+            services.AddSingleton<IDiscogsApiOptions>(sp => discogsApiOptions);
             services.AddSingleton<IDatabaseOptions>(sp => sp.GetRequiredService<IOptions<DatabaseOptions>>().Value);
 
             services.AddSingleton<IDbContext, MongoDbContext>();
+            services.AddTransient<ITimerService, TimerService>();
+            services.AddTransient<IWantlistService, WantlistService>();
 
             services.AddControllers()
                 .AddNewtonsoftJson(options => options.UseMemberCasing());
@@ -41,8 +48,8 @@ namespace LocalDiscogsApi
             services
                 .AddHttpClient<IDiscogsClient, DiscogsClient>(c =>
                 {
-                    c.BaseAddress = new Uri(Configuration["DiscogsApi:Url"]);
-                    c.DefaultRequestHeaders.Add("User-Agent", Configuration["DiscogsApi:UserAgent"]);
+                    c.BaseAddress = new Uri(discogsApiOptions.Url);
+                    c.DefaultRequestHeaders.Add("User-Agent", discogsApiOptions.UserAgent);
                 }).AddHttpMessageHandler<PreventRateLimiterHandler>();
         }
 

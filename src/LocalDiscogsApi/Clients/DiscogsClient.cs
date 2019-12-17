@@ -125,7 +125,7 @@ namespace LocalDiscogsApi.Clients
                 { "page", pageNum.ToString() }
             };
 
-            string requestUrl = QueryHelpers.AddQueryString($"users/{userName}/inventory", queryParams);
+            string requestUrl = QueryHelpers.AddQueryString($"users/{userName}/wants", queryParams);
 
             using (HttpResponseMessage httpResponse = await httpClient.GetAsync(requestUrl))
             {

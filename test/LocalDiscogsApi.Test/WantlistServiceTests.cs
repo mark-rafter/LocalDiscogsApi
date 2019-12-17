@@ -28,6 +28,8 @@ namespace LocalDiscogsApi.Test
             service = new WantlistService(discogsClientMock.Object, dbContextMock.Object);
         }
 
+        #region Exists
+
         [Theory]
         [InlineData(null)]
         [InlineData("")]
@@ -41,32 +43,54 @@ namespace LocalDiscogsApi.Test
             result.Message.Should().ContainAll("Value cannot be null", "username");
         }
 
-        #region Exists
         [Fact]
-        public async Task Exists_UserExists_ReturnsTrue()
+        public async Task Exists_UserExistsInDb_ReturnsTrue()
         {
             // Arrange
-            discogsClientMock
-                .Setup(x => x.GetWantlistPageForUser(TestData.FakeSeller1, 1))
-                .ReturnsAsync(TestData.WantlistRespone);
+            dbContextMock
+                .Setup(x => x.GetUserWantlist(TestData.FakeUser))
+                .ReturnsAsync(new UserWantlist());
 
             // Act
-            bool result = await service.Exists(TestData.FakeSeller1);
+            bool result = await service.Exists(TestData.FakeUser);
 
             // Assert
             result.Should().Be(true);
         }
 
         [Fact]
-        public async Task Exists_UserDoesNotExist_ReturnsFalse()
+        public async Task Exists_UserExistsInDiscogs_ReturnsTrue()
         {
             // Arrange
+            dbContextMock
+                .Setup(x => x.GetUserWantlist(TestData.FakeUser))
+                .ReturnsAsync((UserWantlist)null);
+
             discogsClientMock
-                .Setup(x => x.GetWantlistPageForUser(TestData.FakeSeller1, 1))
+                .Setup(x => x.GetWantlistPageForUser(TestData.FakeUser, 1))
+                .ReturnsAsync(TestData.WantlistRespone);
+
+            // Act
+            bool result = await service.Exists(TestData.FakeUser);
+
+            // Assert
+            result.Should().Be(true);
+        }
+
+        [Fact]
+        public async Task Exists_UserDoesNotExistInDbOrDiscogs_ReturnsFalse()
+        {
+            // Arrange
+            dbContextMock
+                .Setup(x => x.GetUserWantlist(TestData.FakeUser))
+                .ReturnsAsync((UserWantlist)null);
+
+            discogsClientMock
+                .Setup(x => x.GetWantlistPageForUser(TestData.FakeUser, 1))
                 .ReturnsAsync((Discogs.WantlistResponse)null);
 
             // Act
-            bool result = await service.Exists(TestData.FakeSeller1);
+            bool result = await service.Exists(TestData.FakeUser);
 
             // Assert
             result.Should().Be(false);

@@ -70,18 +70,14 @@ namespace LocalDiscogsApi.Database
             if (entity.Id == default)
             {
                 entity.CreatedOn = DateTimeOffset.UtcNow;
+                await collection.InsertOneAsync(entity);
             }
             else
             {
                 entity.ModifiedOn = DateTimeOffset.UtcNow;
+                ReplaceOneResult result = await collection.ReplaceOneAsync(x => x.Id == entity.Id, entity);
+                // todo: check result.IsAcknowledged
             }
-
-            ReplaceOneResult result = await collection.ReplaceOneAsync(
-                x => x.Id == entity.Id,
-                entity,
-                new ReplaceOptions { IsUpsert = true });
-
-            // todo: check result.IsAcknowledged
 
             return entity;
         }

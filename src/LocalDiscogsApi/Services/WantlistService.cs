@@ -32,8 +32,19 @@ namespace LocalDiscogsApi.Services
                 throw new ArgumentNullException(nameof(username));
             }
 
-            Models.Discogs.WantlistResponse response = await discogsClient.GetWantlistPageForUser(username, 1);
-            return response != null;
+            // check db
+            UserWantlist existingWantlist = await dbContext.GetUserWantlist(username);
+
+            if (existingWantlist == null)
+            {
+                // check discogs
+                Models.Discogs.WantlistResponse response = await discogsClient.GetWantlistPageForUser(username, 1);
+                return response != null;
+            }
+            else
+            {
+                return true;
+            }
         }
 
         public async Task<UserWantlist> Get(string username)

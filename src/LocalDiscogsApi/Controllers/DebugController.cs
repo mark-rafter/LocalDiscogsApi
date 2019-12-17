@@ -7,7 +7,7 @@ namespace LocalDiscogsApi.Controllers
 {
     [Route("debug")]
     [ApiController]
-    public class DebugController : Controller
+    public class DebugController : ControllerBase
     {
         private readonly IWantlistService wantlistService;
 
@@ -16,7 +16,22 @@ namespace LocalDiscogsApi.Controllers
             this.wantlistService = wantlistService;
         }
 
-        [HttpGet("wantlist/{username:length(128)}")]
+        [HttpGet]
+        public async Task<ActionResult<UserWantlist>> GetWantlist()
+        {
+            string username = "forafter";
+
+            var wantlistExists = await wantlistService.Exists(username);
+
+            if (!wantlistExists)
+            {
+                return NotFound();
+            }
+
+            return await wantlistService.Get(username);
+        }
+
+        [HttpGet("{username:length(128)}")]
         public async Task<ActionResult<UserWantlist>> GetWantlist(string username)
         {
             if (string.IsNullOrEmpty(username))

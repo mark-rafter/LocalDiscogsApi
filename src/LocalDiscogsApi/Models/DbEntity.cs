@@ -16,7 +16,11 @@ namespace LocalDiscogsApi.Models
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
+
+        [BsonRepresentation(BsonType.String)]
         public DateTimeOffset? CreatedOn { get; set; }
+
+        [BsonRepresentation(BsonType.String)]
         public DateTimeOffset? ModifiedOn { get; set; }
 
         public DbEntity() { }

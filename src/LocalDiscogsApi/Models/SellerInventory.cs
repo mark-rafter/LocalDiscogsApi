@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
 
 namespace LocalDiscogsApi.Models
 {
@@ -19,6 +21,8 @@ namespace LocalDiscogsApi.Models
         public string Username { get; private set; }
         public string AvatarUrl { get; private set; }
         public IEnumerable<SellerListing> Inventory { get; private set; }
+
+        [BsonRepresentation(BsonType.String)]
         public DateTimeOffset LastUpdated { get; private set; }
     }
 }
