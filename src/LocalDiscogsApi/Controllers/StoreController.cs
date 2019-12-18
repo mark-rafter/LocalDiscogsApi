@@ -23,12 +23,5 @@ namespace LocalDiscogsApi.Controllers
             List<Store> result = await storeService.GetStoresByLocation(lat, lng, radius);
             return Ok();
         }
-
-        [HttpPut("update")]
-        public async Task<ActionResult<UserWantlist>> Update()
-        {
-            await storeService.PopulateStores();
-            return Ok();
-        }
     }
 }

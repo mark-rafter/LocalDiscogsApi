@@ -6,12 +6,15 @@ using LocalDiscogsApi.Exceptions;
 using VinylHub = LocalDiscogsApi.Models.VinylHub;
 using Microsoft.AspNetCore.Hosting;
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace LocalDiscogsApi.Clients
 {
     public interface IVinylHubClient
     {
         Task<VinylHub.ShopResponse> GetAllShops();
+
+        Task<string> GetSellerNameByDocId(int docid);
     }
 
     public class VinylHubClient : IVinylHubClient
@@ -52,8 +55,42 @@ namespace LocalDiscogsApi.Clients
             // }
         }
 
-        // todo: get shop with httpClient.GetAsync("shop/{Docid}") 
-        // scrape for https://www.discogs.com/seller/XXXXXXX
-        // <td id="external-links" class="" data-props='{"links": [{"nofollow": true, "title": "piccadillyrecords.com", "url": "http://www.piccadillyrecords.com"}, {"nofollow": false, "notes": "Discogs Seller Page", "title": "Discogs", "url": "https://www.discogs.com/seller/Piccadillyrecords/profile"}], "user": false}'/>
+        public async Task<string> GetSellerNameByDocId(int docid)
+        {
+            using (HttpResponseMessage httpResponse = await httpClient.GetAsync($"shop/{docid}"))
+            {
+                // todo: 404 test.
+
+                if (!httpResponse.IsSuccessStatusCode)
+                {
+                    throw new RestRequestException(httpResponse, await httpResponse.Content?.ReadAsStringAsync());
+                }
+
+                string responseString = await httpResponse.Content.ReadAsStringAsync();
+
+                return GetSellerNameFromResponse(responseString);
+            }
+        }
+
+        private string GetSellerNameFromResponse(string responseString)
+        {
+            string pattern = @"discogs\.com\/seller\/(\S+)""";
+
+            Regex regex = new Regex(pattern, RegexOptions.IgnoreCase);
+
+            Match match = regex.Match(responseString);
+
+            if (match.Success && match.Groups.Count > 1)
+            {
+                // match.Groups[1] will be either: 
+                // SELLER_NAME/....
+                // SELLER_NAME/
+                // SELLER_NAME
+                return match.Groups[1].Value.Split('/')[0];
+            }
+
+            // todo: log? / exception?
+            return null;
+        }
     }
 }
