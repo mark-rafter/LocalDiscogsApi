@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Options;
 
 namespace LocalDiscogsApi
 {
@@ -45,6 +44,7 @@ namespace LocalDiscogsApi
             services.AddTransient<ITimerService, TimerService>();
             services.AddTransient<IWantlistService, WantlistService>();
             services.AddTransient<IInventoryService, InventoryService>();
+            services.AddTransient<IStoreService, StoreService>();
 
             services.AddControllers()
                 .AddNewtonsoftJson(options => options.UseMemberCasing());

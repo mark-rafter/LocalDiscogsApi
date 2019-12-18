@@ -4,37 +4,50 @@ using Newtonsoft.Json;
 using System.Threading.Tasks;
 using LocalDiscogsApi.Exceptions;
 using VinylHub = LocalDiscogsApi.Models.VinylHub;
+using Microsoft.AspNetCore.Hosting;
+using System.IO;
 
 namespace LocalDiscogsApi.Clients
 {
     public interface IVinylHubClient
     {
-        Task<IList<VinylHub.Store>> GetStores();
+        Task<IList<VinylHub.Shop>> GetAllStores();
     }
 
     public class VinylHubClient : IVinylHubClient
     {
         private readonly HttpClient httpClient;
 
-        public VinylHubClient(HttpClient httpClient)
+        private readonly string markersJsonPath;
+
+        public VinylHubClient(HttpClient httpClient, IWebHostEnvironment env)
         {
             this.httpClient = httpClient;
+
+            markersJsonPath = env.ContentRootPath + Path.DirectorySeparatorChar
+                + "Data" + Path.DirectorySeparatorChar
+                + "markers_2019-12-17.json";
         }
 
-        public async Task<IList<VinylHub.Store>> GetStores()
+        public async Task<IList<VinylHub.Shop>> GetAllStores()
         {
-            // todo: use local JSON first.
-
-            using (HttpResponseMessage httpResponse = await httpClient.GetAsync("api/markers"))
+            // todo: dev only. use external call in prod
+            using (StreamReader fileStream = File.OpenText(markersJsonPath))
             {
-                if (!httpResponse.IsSuccessStatusCode)
-                {
-                    throw new RestRequestException(httpResponse, await httpResponse.Content?.ReadAsStringAsync());
-                }
-
-                string responseString = await httpResponse.Content.ReadAsStringAsync();
-                return JsonConvert.DeserializeObject<IList<VinylHub.Store>>(responseString);
+                string fileString = await fileStream.ReadToEndAsync();
+                return JsonConvert.DeserializeObject<IList<VinylHub.Shop>>(fileString);
             }
+
+            // using (HttpResponseMessage httpResponse = await httpClient.GetAsync("api/markers"))
+            // {
+            //     if (!httpResponse.IsSuccessStatusCode)
+            //     {
+            //         throw new RestRequestException(httpResponse, await httpResponse.Content?.ReadAsStringAsync());
+            //     }
+
+            //     string responseString = await httpResponse.Content.ReadAsStringAsync();
+            //     return JsonConvert.DeserializeObject<IList<VinylHub.Store>>(responseString);
+            // }
         }
 
         // todo: get store with httpClient.GetAsync("shop/{Docid}") 
