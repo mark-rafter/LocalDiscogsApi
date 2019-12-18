@@ -18,10 +18,10 @@ namespace LocalDiscogsApi.Controllers
         }
 
         [HttpGet("by-location")]
-        public async Task<ActionResult<UserWantlist>> GetStoresByLocation(double lat, double lng, int radius)
+        public async Task<ActionResult<StoreResponse>> GetStoresByLocation(double lat, double lng, int radius)
         {
-            List<Store> result = await storeService.GetStoresByLocation(lat, lng, radius);
-            return Ok();
+            List<StoreResponse> result = await storeService.GetStoresByLocation(lat, lng, radius);
+            return Ok(result);
         }
     }
 }

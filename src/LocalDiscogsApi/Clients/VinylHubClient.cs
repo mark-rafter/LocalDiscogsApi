@@ -59,8 +59,7 @@ namespace LocalDiscogsApi.Clients
         {
             using (HttpResponseMessage httpResponse = await httpClient.GetAsync($"shop/{docid}"))
             {
-                // todo: 404 test.
-
+                // todo: 404 scenario.
                 if (!httpResponse.IsSuccessStatusCode)
                 {
                     throw new RestRequestException(httpResponse, await httpResponse.Content?.ReadAsStringAsync());

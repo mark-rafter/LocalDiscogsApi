@@ -21,6 +21,9 @@ namespace LocalDiscogsApi.Database
         Task<List<Store>> GetStoresByLocation(double lat, double lng, int radius);
         Task<Store> SetStore(Store store);
         Task PopulateStores(IEnumerable<Store> stores);
+
+        Task<SellerName> GetSellerNameByDocId(int docid);
+        Task<SellerName> SetSellerName(SellerName sellerName);
     }
 
     public class MongoDbContext : IDbContext
@@ -29,6 +32,7 @@ namespace LocalDiscogsApi.Database
         IMongoCollection<SellerInventory> sellerInventories;
         IMongoCollection<UserWantlist> userWantlists;
         IMongoCollection<Store> stores;
+        IMongoCollection<SellerName> sellerNames;
 
         public MongoDbContext(IDatabaseOptions dbOptions)
         {
@@ -38,6 +42,24 @@ namespace LocalDiscogsApi.Database
             sellerInventories = database.GetCollection<SellerInventory>(nameof(SellerInventory));
             userWantlists = database.GetCollection<UserWantlist>(nameof(UserWantlist));
             stores = database.GetCollection<Store>(nameof(Store));
+            sellerNames = database.GetCollection<SellerName>(nameof(SellerName));
+        }
+
+        private async Task<T> Upsert<T>(IMongoCollection<T> collection, T entity) where T : IDbEntity
+        {
+            if (entity.Id == default)
+            {
+                entity.CreatedOn = DateTimeOffset.UtcNow;
+                await collection.InsertOneAsync(entity);
+            }
+            else
+            {
+                entity.ModifiedOn = DateTimeOffset.UtcNow;
+                ReplaceOneResult result = await collection.ReplaceOneAsync(x => x.Id == entity.Id, entity);
+                // todo: check result.IsAcknowledged
+            }
+
+            return entity;
         }
 
         #region SellerInventory
@@ -108,21 +130,17 @@ namespace LocalDiscogsApi.Database
 
         #endregion
 
-        private async Task<T> Upsert<T>(IMongoCollection<T> collection, T entity) where T : IDbEntity
-        {
-            if (entity.Id == default)
-            {
-                entity.CreatedOn = DateTimeOffset.UtcNow;
-                await collection.InsertOneAsync(entity);
-            }
-            else
-            {
-                entity.ModifiedOn = DateTimeOffset.UtcNow;
-                ReplaceOneResult result = await collection.ReplaceOneAsync(x => x.Id == entity.Id, entity);
-                // todo: check result.IsAcknowledged
-            }
+        #region SellerName
 
-            return entity;
+        public async Task<SellerName> GetSellerNameByDocId(int docid)
+        {
+            IAsyncCursor<SellerName> result = await sellerNames.FindAsync(x => x.Docid == docid);
+            return result.FirstOrDefault();
         }
+
+        public async Task<SellerName> SetSellerName(SellerName sellerName)
+            => await Upsert(sellerNames, sellerName);
+
+        #endregion
     }
 }

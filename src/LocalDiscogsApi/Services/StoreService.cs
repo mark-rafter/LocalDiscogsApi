@@ -11,7 +11,7 @@ namespace LocalDiscogsApi.Services
 {
     public interface IStoreService
     {
-        Task<List<Store>> GetStoresByLocation(double lat, double lng, int radius);
+        Task<List<StoreResponse>> GetStoresByLocation(double lat, double lng, int radius);
         Task PopulateStores();
     }
 
@@ -28,9 +28,48 @@ namespace LocalDiscogsApi.Services
             this.mapper = mapper;
         }
 
-        public async Task<List<Store>> GetStoresByLocation(double lat, double lng, int radius)
+        public async Task<List<StoreResponse>> GetStoresByLocation(double lat, double lng, int radius)
         {
-            return await dbContext.GetStoresByLocation(lat, lng, radius);
+            // get stores
+            List<Store> stores = await dbContext.GetStoresByLocation(lat, lng, radius);
+
+            var result = new List<StoreResponse>();
+
+            // todo: parallelise!!
+            foreach (Store store in stores)
+            {
+                // get sellername from db
+                SellerName sellerName = await dbContext.GetSellerNameByDocId(store.Docid);
+
+                if (sellerName == null)
+                {
+                    // get missing sellername from vinylhub
+                    string sellername = await vinylHubClient.GetSellerNameByDocId(store.Docid);
+
+                    // todo: if (sellername == null) ...
+                    // currently it just stores an empty string so that we don't keep re-checking vinylhub
+                    sellerName = new SellerName(
+                        id: null,
+                        store.Docid,
+                        sellername ?? string.Empty);
+
+                    // insert into db.
+                    sellerName = await dbContext.SetSellerName(sellerName);
+                }
+
+                if (!string.IsNullOrEmpty(sellerName.Sellername))
+                {
+                    // todo: mapper
+                    result.Add(new StoreResponse
+                    {
+                        Sellername = sellerName.Sellername,
+                        Address = store.Address,
+                        Location = store.Location
+                    });
+                }
+            }
+
+            return result;
         }
 
         public async Task PopulateStores()
