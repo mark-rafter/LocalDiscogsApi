@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using LocalDiscogsApi.Config;
 using LocalDiscogsApi.Models;
 using MongoDB.Driver;
+using MongoDB.Driver.GeoJsonObjectModel;
 
 namespace LocalDiscogsApi.Database
 {
@@ -16,6 +17,10 @@ namespace LocalDiscogsApi.Database
 
         Task<UserWantlist> GetUserWantlist(string userName);
         Task<UserWantlist> SetUserWantlist(UserWantlist userWantlist);
+
+        Task<List<Store>> GetStoresByLocation(double lat, double lng, int radius);
+        Task<Store> SetStore(Store store);
+        Task PopulateStores(IEnumerable<Store> stores);
     }
 
     public class MongoDbContext : IDbContext
@@ -23,6 +28,7 @@ namespace LocalDiscogsApi.Database
         IMongoDatabase database;
         IMongoCollection<SellerInventory> sellerInventories;
         IMongoCollection<UserWantlist> userWantlists;
+        IMongoCollection<Store> stores;
 
         public MongoDbContext(IDatabaseOptions dbOptions)
         {
@@ -31,6 +37,7 @@ namespace LocalDiscogsApi.Database
 
             sellerInventories = database.GetCollection<SellerInventory>(nameof(SellerInventory));
             userWantlists = database.GetCollection<UserWantlist>(nameof(UserWantlist));
+            stores = database.GetCollection<Store>(nameof(Store));
         }
 
         #region SellerInventory
@@ -62,6 +69,42 @@ namespace LocalDiscogsApi.Database
 
         public async Task<UserWantlist> SetUserWantlist(UserWantlist userWantlist)
             => await Upsert(userWantlists, userWantlist);
+
+        #endregion
+
+        #region Store
+
+        public async Task<List<Store>> GetStoresByLocation(double lat, double lng, int radius)
+        {
+            GeoJsonPoint<GeoJson2DGeographicCoordinates> point = GeoJson.Point(GeoJson.Geographic(lng, lat));
+
+            FilterDefinition<Store> locationQuery =
+                new FilterDefinitionBuilder<Store>().Near(store => store.Location, point, radius);
+
+            IAsyncCursor<Store> result = await stores.FindAsync(locationQuery);
+            return result.ToList();
+        }
+
+        public async Task<Store> SetStore(Store store)
+        {
+            store.ModifiedOn = DateTimeOffset.UtcNow;
+
+            ReplaceOneResult result = await stores.ReplaceOneAsync(
+                x => x.Docid == store.Docid,
+                store,
+                new ReplaceOptions { IsUpsert = true });
+
+            return store;
+        }
+
+        public async Task PopulateStores(IEnumerable<Store> newStores)
+        {
+            await stores.InsertManyAsync(newStores);
+
+            var builder = Builders<Store>.IndexKeys;
+            IndexKeysDefinition<Store> keys = builder.Geo2DSphere(tag => tag.Location);
+            await stores.Indexes.CreateOneAsync(new CreateIndexModel<Store>(keys));
+        }
 
         #endregion
 

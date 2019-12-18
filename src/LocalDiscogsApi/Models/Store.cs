@@ -6,7 +6,7 @@ namespace LocalDiscogsApi.Models
     {
         public Store() { }
 
-        public Store(string id, double lng, double lat, string address, int docid)
+        public Store(string id, double lat, double lng, string address, int docid)
         {
             base.Id = id ?? default;
             Location = new GeoJsonPoint<GeoJson2DGeographicCoordinates>(new GeoJson2DGeographicCoordinates(lng, lat));

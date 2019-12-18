@@ -1,6 +1,7 @@
 using LocalDiscogsApi.Models;
 using LocalDiscogsApi.Services;
 using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace LocalDiscogsApi.Controllers
@@ -17,9 +18,16 @@ namespace LocalDiscogsApi.Controllers
         }
 
         [HttpGet("by-location")]
-        public async Task<ActionResult<UserWantlist>> GetStoresByLocation(double lng, double lat, int radiusKm)
+        public async Task<ActionResult<UserWantlist>> GetStoresByLocation(double lat, double lng, int radius)
         {
-            //
+            List<Store> result = await storeService.GetStoresByLocation(lat, lng, radius);
+            return Ok();
+        }
+
+        [HttpPut("update")]
+        public async Task<ActionResult<UserWantlist>> Update()
+        {
+            await storeService.PopulateStores();
             return Ok();
         }
     }

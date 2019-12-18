@@ -11,7 +11,7 @@ namespace LocalDiscogsApi.Clients
 {
     public interface IVinylHubClient
     {
-        Task<IList<VinylHub.Shop>> GetAllStores();
+        Task<VinylHub.ShopResponse> GetAllShops();
     }
 
     public class VinylHubClient : IVinylHubClient
@@ -29,13 +29,15 @@ namespace LocalDiscogsApi.Clients
                 + "markers_2019-12-17.json";
         }
 
-        public async Task<IList<VinylHub.Shop>> GetAllStores()
+        public async Task<VinylHub.ShopResponse> GetAllShops()
         {
             // todo: dev only. use external call in prod
             using (StreamReader fileStream = File.OpenText(markersJsonPath))
             {
                 string fileString = await fileStream.ReadToEndAsync();
-                return JsonConvert.DeserializeObject<IList<VinylHub.Shop>>(fileString);
+
+                // todo: look into possible yield return scenario to lessen memory load?
+                return JsonConvert.DeserializeObject<VinylHub.ShopResponse>(fileString);
             }
 
             // using (HttpResponseMessage httpResponse = await httpClient.GetAsync("api/markers"))
@@ -50,7 +52,7 @@ namespace LocalDiscogsApi.Clients
             // }
         }
 
-        // todo: get store with httpClient.GetAsync("shop/{Docid}") 
+        // todo: get shop with httpClient.GetAsync("shop/{Docid}") 
         // scrape for https://www.discogs.com/seller/XXXXXXX
         // <td id="external-links" class="" data-props='{"links": [{"nofollow": true, "title": "piccadillyrecords.com", "url": "http://www.piccadillyrecords.com"}, {"nofollow": false, "notes": "Discogs Seller Page", "title": "Discogs", "url": "https://www.discogs.com/seller/Piccadillyrecords/profile"}], "user": false}'/>
     }

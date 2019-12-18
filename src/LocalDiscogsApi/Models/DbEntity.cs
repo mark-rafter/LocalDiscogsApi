@@ -15,6 +15,7 @@ namespace LocalDiscogsApi.Models
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
+        [BsonIgnoreIfDefault]
         public string Id { get; set; }
 
         [BsonRepresentation(BsonType.String)]
