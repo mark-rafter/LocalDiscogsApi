@@ -63,8 +63,7 @@ namespace LocalDiscogsApi.Services
                     result.Add(new StoreResponse
                     {
                         Sellername = sellerName.Sellername,
-                        Address = store.Address,
-                        Location = store.Location
+                        Address = store.Address
                     });
                 }
             }

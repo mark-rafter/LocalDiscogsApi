@@ -30,14 +30,16 @@ namespace LocalDiscogsApi
 
             services.AddMemoryCache();
 
+            services.AddCors();
+
             // config
             DiscogsApiOptions discogsApiOptions = Configuration.GetSection(nameof(DiscogsApiOptions)).Get<DiscogsApiOptions>();
             DatabaseOptions databaseOptions = Configuration.GetSection(nameof(DatabaseOptions)).Get<DatabaseOptions>();
             VinylHubApiOptions vinylHubApiOptions = Configuration.GetSection(nameof(VinylHubApiOptions)).Get<VinylHubApiOptions>();
 
-            services.AddSingleton<IDiscogsApiOptions>(sp => discogsApiOptions);
-            services.AddSingleton<IDatabaseOptions>(sp => databaseOptions);
-            services.AddSingleton<IVinylHubApiOptions>(sp => vinylHubApiOptions);
+            services.AddSingleton<IDiscogsApiOptions>(discogsApiOptions);
+            services.AddSingleton<IDatabaseOptions>(databaseOptions);
+            services.AddSingleton<IVinylHubApiOptions>(vinylHubApiOptions);
 
             // services
             services.AddSingleton<IDbContext, MongoDbContext>();
@@ -46,8 +48,7 @@ namespace LocalDiscogsApi
             services.AddTransient<IInventoryService, InventoryService>();
             services.AddTransient<IStoreService, StoreService>();
 
-            services.AddControllers()
-                .AddNewtonsoftJson(options => options.UseMemberCasing());
+            services.AddControllers();
 
             services.AddTransient<PreventRateLimiterHandler>();
 
@@ -68,12 +69,16 @@ namespace LocalDiscogsApi
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+
+                // todo: prod??
+                app.UseCors(builder => builder
+                    .AllowAnyOrigin()
+                    .AllowAnyMethod()
+                    .AllowAnyHeader());
             }
 
             app.UseHttpsRedirection();
-
             app.UseRouting();
-
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
