@@ -1,4 +1,5 @@
 using System;
+using System.Net.Http;
 using AutoMapper;
 using LocalDiscogsApi.Clients;
 using LocalDiscogsApi.Config;
@@ -10,6 +11,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Polly;
 
 namespace LocalDiscogsApi
 {
@@ -53,12 +55,19 @@ namespace LocalDiscogsApi
             services.AddTransient<PreventRateLimiterHandler>();
 
             // clients
+            // todo: test that this works. need to read up on Polly / HttpClient logging
+            Polly.Retry.AsyncRetryPolicy<HttpResponseMessage> ratelimitHitPolicy = Policy<HttpResponseMessage>
+                .HandleResult(r => r.StatusCode == System.Net.HttpStatusCode.TooManyRequests)
+                .WaitAndRetryAsync(1, _ => TimeSpan.FromSeconds(discogsApiOptions.RatelimitTimeout));
+
             services
                 .AddHttpClient<IDiscogsClient, DiscogsClient>(c =>
                 {
                     c.BaseAddress = new Uri(discogsApiOptions.Url);
                     c.DefaultRequestHeaders.Add("User-Agent", discogsApiOptions.UserAgent);
-                }).AddHttpMessageHandler<PreventRateLimiterHandler>();
+                })
+                .AddHttpMessageHandler<PreventRateLimiterHandler>()
+                .AddPolicyHandler(ratelimitHitPolicy); /// extra precaution in case <see cref="PreventRateLimiterHandler"/> fails
 
             services.AddHttpClient<IVinylHubClient, VinylHubClient>(c => c.BaseAddress = new Uri(vinylHubApiOptions.Url));
         }

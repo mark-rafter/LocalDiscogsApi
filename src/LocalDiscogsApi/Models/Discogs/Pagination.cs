@@ -8,7 +8,7 @@ namespace LocalDiscogsApi.Models.Discogs
         {
             Items = items;
             Page = page;
-            Urls = urls ?? throw new ArgumentNullException(nameof(urls));
+            Urls = urls;
             Pages = pages;
         }
 

@@ -175,7 +175,7 @@ namespace LocalDiscogsApi.Clients
                 response = JsonConvert.DeserializeObject<TResponse>(responseString);
             }
 
-            if (!string.IsNullOrEmpty(response.Pagination.Urls.Next))
+            if (!string.IsNullOrEmpty(response.Pagination.Urls?.Next))
             {
                 TItem[] nextItems = await GetPageItems<TItem, TResponse>(response.Pagination.Urls.Next);
 
