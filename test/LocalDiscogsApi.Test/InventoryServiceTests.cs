@@ -42,7 +42,7 @@ namespace LocalDiscogsApi.Test
             ArgumentNullException result = await Assert.ThrowsAsync<ArgumentNullException>(() => service.Get(emptySellername));
 
             // Assert
-            result.Message.Should().ContainAll("Value cannot be null", "username");
+            result.Message.Should().ContainAll("Value cannot be null");
         }
 
         [Fact]

@@ -11,7 +11,7 @@ namespace LocalDiscogsApi.Services
 {
     public interface IStoreService
     {
-        Task<List<StoreResponse>> GetStoresByLocation(double lat, double lng, int radius);
+        IAsyncEnumerable<StoreResponse> GetStoresByLocation(double lat, double lng, int radius);
         Task PopulateStores();
     }
 
@@ -28,12 +28,10 @@ namespace LocalDiscogsApi.Services
             this.mapper = mapper;
         }
 
-        public async Task<List<StoreResponse>> GetStoresByLocation(double lat, double lng, int radius)
+        public async IAsyncEnumerable<StoreResponse> GetStoresByLocation(double lat, double lng, int radius)
         {
             // get stores
             List<Store> stores = await dbContext.GetStoresByLocation(lat, lng, radius);
-
-            var result = new List<StoreResponse>();
 
             // todo: parallelise!!
             foreach (Store store in stores)
@@ -47,7 +45,7 @@ namespace LocalDiscogsApi.Services
                     string sellername = await vinylHubClient.GetSellerNameByDocId(store.Docid);
 
                     // todo: if (sellername == null) ...
-                    // currently it just stores an empty string so that we don't keep re-checking vinylhub
+                    // currently just stores an empty string to prevent re-checking vinylhub
                     sellerName = new SellerName(
                         id: null,
                         store.Docid,
@@ -59,16 +57,13 @@ namespace LocalDiscogsApi.Services
 
                 if (!string.IsNullOrEmpty(sellerName.Sellername))
                 {
-                    // todo: mapper
-                    result.Add(new StoreResponse
+                    yield return new StoreResponse
                     {
                         Sellername = sellerName.Sellername,
                         Address = store.Address
-                    });
+                    };
                 }
             }
-
-            return result;
         }
 
         public async Task PopulateStores()
