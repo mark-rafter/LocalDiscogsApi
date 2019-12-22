@@ -45,7 +45,7 @@ namespace LocalDiscogsApi.Middleware
         {
             Ratelimit ratelimit = memoryCache.Get<Ratelimit>(nameof(Ratelimit));
 
-            if (ratelimit?.Remaining < 1)
+            if (ratelimit?.Remaining <= 1)
             {
                 /// wait until <see cref="ratelimitTimeout" /> has elapsed since the last request: 
                 /// RatelimitTimeout - (now - lastRequestTime)

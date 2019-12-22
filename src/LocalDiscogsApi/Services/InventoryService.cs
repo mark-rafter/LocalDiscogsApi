@@ -47,6 +47,12 @@ namespace LocalDiscogsApi.Services
                     return null;
                 }
 
+                if (page1.Pagination.Pages > 100)
+                {
+                    // todo: workaround by flipping sort order
+                    throw new Exception("Cannot retrieve store, inventory size is > 10000");
+                }
+
                 // retrieve latest from discogs
                 Discogs.Inventory latestInventory = await discogsClient.GetInventoryForUser(sellername);
 
