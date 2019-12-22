@@ -39,35 +39,7 @@ namespace LocalDiscogsApi.Services
 
             if (existingInventory == null)
             {
-                // check exists on discogs
-                Discogs.InventoryResponse page1 = await discogsClient.GetInventoryPageForUser(sellername, 1);
-
-                if (page1 == null)
-                {
-                    return null;
-                }
-
-                // retrieve latest from discogs
-                Discogs.Inventory latestInventory = await discogsClient.GetInventoryForUser(sellername);
-
-                string avatarUrl = latestInventory?.FirstOrDefault() is Discogs.Listing firstListing
-                    ? firstListing.Seller.AvatarUrl
-                    : string.Empty;
-
-                // todo: test what happens when inventory exists but listings = 0? (might be covered in DiscogsClient tests)
-                List<SellerListing> mappedInventory = mapper.Map<List<SellerListing>>(latestInventory);
-
-                var sellerInventory = new SellerInventory(
-                    null,
-                    sellername,
-                    avatarUrl,
-                    mappedInventory,
-                    DateTimeOffset.Now);
-
-                // update db, populates sellerInventory id.
-                sellerInventory = await dbContext.SetSellerInventory(sellerInventory);
-
-                return sellerInventory;
+                existingInventory = await GetFullInventoryFromDiscogs(sellername);
             }
             else if (IsExpired(existingInventory.LastUpdated, hours: 12))
             {
@@ -75,6 +47,74 @@ namespace LocalDiscogsApi.Services
             }
 
             return existingInventory;
+        }
+
+        private async Task<SellerInventory> GetFullInventoryFromDiscogs(string sellername)
+        {
+            SellerInventory sellerInventory;
+            var listings = new HashSet<SellerListing>(new SellerListingComparer());
+
+            // check exists on discogs
+            Discogs.InventoryResponse pageOne = await discogsClient.GetInventoryPageForUser(sellername, 1);
+
+            if (pageOne == null)
+            {
+                sellerInventory = new SellerInventory(
+                    id: null,
+                    username: sellername,
+                    avatarUrl: null,
+                    inventory: listings,
+                    lastUpdated: DateTimeOffset.Now);
+
+                // store empty seller in db
+                sellerInventory = await dbContext.SetSellerInventory(sellerInventory);
+
+                return sellerInventory;
+            }
+
+            // map page1 to SellerInventory
+            string avatarUrl = pageOne.Items?.FirstOrDefault() is Discogs.Listing firstListing
+                            ? firstListing.Seller.AvatarUrl
+                            : string.Empty;
+
+            listings.UnionWith(mapper.Map<List<SellerListing>>(pageOne.Items));
+
+            sellerInventory = new SellerInventory(
+                null,
+                sellername,
+                avatarUrl,
+                listings,
+                DateTimeOffset.Now);
+
+            // store SellerInventory in db
+            sellerInventory = await dbContext.SetSellerInventory(sellerInventory);
+
+            // ditto for the rest of the pages.
+            // note: do not parallelise this. implement queue system instead.
+            for (int pageNum = 1; pageNum < pageOne.Pagination?.Pages; pageNum++)
+            {
+                try
+                {
+                    Discogs.InventoryResponse page = await discogsClient.GetInventoryPageForUser(sellername, pageNum);
+
+                    if (page == null)
+                    {
+                        break;
+                    }
+
+                    listings.UnionWith(mapper.Map<List<SellerListing>>(page.Items));
+
+                    sellerInventory.Inventory = listings;
+
+                    sellerInventory = await dbContext.SetSellerInventory(sellerInventory);
+                }
+                catch (Exception ex)
+                {
+                    // todo:
+                }
+            }
+
+            return sellerInventory;
         }
 
         private bool IsExpired(DateTimeOffset? lastUpdated, int hours)

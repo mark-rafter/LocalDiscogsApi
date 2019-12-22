@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
@@ -22,5 +23,12 @@ namespace LocalDiscogsApi.Models
         public string Price { get; private set; }
 
         public long ReleaseId { get; private set; }
+    }
+
+    public class SellerListingComparer : IEqualityComparer<SellerListing>
+    {
+        public bool Equals(SellerListing x, SellerListing y) => x.Id == y.Id;
+
+        public int GetHashCode(SellerListing obj) => obj.Id.GetHashCode();
     }
 }

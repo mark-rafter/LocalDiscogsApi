@@ -29,18 +29,27 @@ namespace LocalDiscogsApi.Clients
 
         public async Task<Discogs.InventoryResponse> GetInventoryPageForUser(string userName, int pageNum)
         {
-            if (pageNum < 1)
+            if (pageNum < 1 || pageNum > 198)
             {
-                throw new System.ArgumentOutOfRangeException(nameof(pageNum), pageNum.ToString(), $"{nameof(pageNum)} must be greater than 0");
+                throw new System.ArgumentOutOfRangeException(nameof(pageNum), pageNum.ToString(), $"{nameof(pageNum)} must be between 1-198");
             }
 
-            var queryParams = new Dictionary<string, string>
+            Dictionary<string, string> queryParams = new Dictionary<string, string>
             {
                 { "sort", "listed" },
-                { "sort_order", "desc" },
-                { "per_page", "100" },
-                { "page", pageNum.ToString() }
+                { "per_page", "100" }
             };
+
+            if (pageNum > 99)
+            {
+                queryParams.Add("sort_order", "asc");
+                queryParams.Add("page", (pageNum - 99).ToString());
+            }
+            else
+            {
+                queryParams.Add("sort_order", "desc");
+                queryParams.Add("page", pageNum.ToString());
+            }
 
             string requestUrl = QueryHelpers.AddQueryString($"users/{userName}/inventory", queryParams);
 
@@ -60,33 +69,6 @@ namespace LocalDiscogsApi.Clients
                 return JsonConvert.DeserializeObject<Discogs.InventoryResponse>(responseString);
             }
         }
-
-        //public async Task<Discogs.Inventory> GetInventoryForUser(string userName, IEnumerable<Discogs.Listing> currentInventory)
-        //{
-        //    Discogs.InventoryResponse pageOne = await GetInventoryPageForUser(userName, 1);
-
-        //    if (pageOne.Pagination.Items == currentInventory.Count()
-        //        && pageOne.Items.FirstOrDefault() == currentInventory.FirstOrDefault())
-        //    {
-        //        // inventory hasn't changed since last check.
-        //        return new Discogs.Inventory(currentInventory.ToArray());
-        //    }
-        //    else
-        //    {
-        //        var getPageTasks = new List<Task<Discogs.InventoryResponse>>();
-
-        //        for (int i = 2; i < pageOne.Pagination.Pages; i++)
-        //        {
-        //            getPageTasks.Add(GetInventoryPageForUser(userName, i));
-        //        }
-
-        //        await Task.WhenAll(getPageTasks);
-
-        //        Discogs.Listing[] allItems = pageOne.Items.Concat(getPageTasks?.SelectMany(t => t.Result.Items)).ToArray();
-
-        //        return new Discogs.Inventory(allItems);
-        //    }
-        //}
 
         // todo: make this private.
         // have public method pass in existing list. 

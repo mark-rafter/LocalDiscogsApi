@@ -9,7 +9,7 @@ namespace LocalDiscogsApi.Models
     {
         public SellerInventory() { }
 
-        public SellerInventory(string id, string username, string avatarUrl, IEnumerable<SellerListing> inventory, DateTimeOffset lastUpdated)
+        public SellerInventory(string id, string username, string avatarUrl, HashSet<SellerListing> inventory, DateTimeOffset lastUpdated)
         {
             base.Id = id ?? default;
             Username = username ?? throw new ArgumentNullException(nameof(username));
@@ -20,7 +20,7 @@ namespace LocalDiscogsApi.Models
 
         public string Username { get; private set; }
         public string AvatarUrl { get; private set; }
-        public IEnumerable<SellerListing> Inventory { get; private set; }
+        public HashSet<SellerListing> Inventory { get; set; }
 
         [BsonRepresentation(BsonType.String)]
         public DateTimeOffset LastUpdated { get; private set; }
