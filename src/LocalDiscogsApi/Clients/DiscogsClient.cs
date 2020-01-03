@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 using System.Threading.Tasks;
 using LocalDiscogsApi.Exceptions;
 using Discogs = LocalDiscogsApi.Models.Discogs;
+using System.IO;
 
 namespace LocalDiscogsApi.Clients
 {
@@ -56,8 +57,13 @@ namespace LocalDiscogsApi.Clients
                     throw new RestRequestException(httpResponse, await httpResponse.Content?.ReadAsStringAsync());
                 }
 
-                string responseString = await httpResponse.Content.ReadAsStringAsync();
-                return JsonConvert.DeserializeObject<Discogs.InventoryResponse>(responseString);
+                using (Stream stream = await httpResponse.Content.ReadAsStreamAsync())
+                using (StreamReader sr = new StreamReader(stream))
+                using (JsonReader reader = new JsonTextReader(sr))
+                {
+                    JsonSerializer serializer = new JsonSerializer();
+                    return serializer.Deserialize<Discogs.InventoryResponse>(reader);
+                }
             }
         }
 
@@ -139,8 +145,13 @@ namespace LocalDiscogsApi.Clients
                     throw new RestRequestException(httpResponse, await httpResponse.Content?.ReadAsStringAsync());
                 }
 
-                string responseString = await httpResponse.Content.ReadAsStringAsync();
-                return JsonConvert.DeserializeObject<Discogs.WantlistResponse>(responseString);
+                using (Stream stream = await httpResponse.Content.ReadAsStreamAsync())
+                using (StreamReader sr = new StreamReader(stream))
+                using (JsonReader reader = new JsonTextReader(sr))
+                {
+                    JsonSerializer serializer = new JsonSerializer();
+                    return serializer.Deserialize<Discogs.WantlistResponse>(reader);
+                }
             }
         }
 
@@ -171,8 +182,13 @@ namespace LocalDiscogsApi.Clients
                     throw new RestRequestException(httpResponse, await httpResponse.Content?.ReadAsStringAsync());
                 }
 
-                string responseString = await httpResponse.Content.ReadAsStringAsync();
-                response = JsonConvert.DeserializeObject<TResponse>(responseString);
+                using (Stream stream = await httpResponse.Content.ReadAsStreamAsync())
+                using (StreamReader sr = new StreamReader(stream))
+                using (JsonReader reader = new JsonTextReader(sr))
+                {
+                    JsonSerializer serializer = new JsonSerializer();
+                    response = serializer.Deserialize<TResponse>(reader);
+                }
             }
 
             if (!string.IsNullOrEmpty(response.Pagination.Urls?.Next))

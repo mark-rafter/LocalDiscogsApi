@@ -4,6 +4,7 @@ using AutoMapper;
 using LocalDiscogsApi.Clients;
 using LocalDiscogsApi.Config;
 using LocalDiscogsApi.Database;
+using LocalDiscogsApi.Helpers;
 using LocalDiscogsApi.Middleware;
 using LocalDiscogsApi.Services;
 using Microsoft.AspNetCore.Builder;
@@ -50,7 +51,7 @@ namespace LocalDiscogsApi
             services.AddTransient<IInventoryService, InventoryService>();
             services.AddTransient<IStoreService, StoreService>();
 
-            services.AddControllers();
+            services.AddControllers(options => options.Filters.Add(typeof(GlobalExceptionFilter)));
 
             services.AddTransient<PreventRateLimiterHandler>();
 

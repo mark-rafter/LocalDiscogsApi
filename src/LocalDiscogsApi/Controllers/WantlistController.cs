@@ -19,11 +19,6 @@ namespace LocalDiscogsApi.Controllers
         [HttpGet("{username}")]
         public async Task<ActionResult<UserWantlist>> Get(string username)
         {
-            if (string.IsNullOrEmpty(username))
-            {
-                return NotFound();
-            }
-
             bool wantlistExists = await wantlistService.Exists(username);
 
             if (!wantlistExists)

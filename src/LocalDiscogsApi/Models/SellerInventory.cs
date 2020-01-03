@@ -20,7 +20,7 @@ namespace LocalDiscogsApi.Models
 
         public string Username { get; private set; }
         public string AvatarUrl { get; private set; }
-        public IEnumerable<SellerListing> Inventory { get; private set; }
+        public IEnumerable<SellerListing> Inventory { get; set; }
 
         [BsonRepresentation(BsonType.String)]
         public DateTimeOffset LastUpdated { get; private set; }
