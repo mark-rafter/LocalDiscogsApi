@@ -16,4 +16,4 @@ jobs:
     - name: Build with dotnet
       run: dotnet build src/LocalDiscogsApi --configuration Release
     - name: Test
-      run: dotnet test test/LocalDiscogsApi.Test
+      run: dotnet test test/LocalDiscogsApi.Test --configuration Release
