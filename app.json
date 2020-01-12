@@ -1,0 +1,12 @@
+{
+  "name": "LocalDiscogsApi",
+  "description": "Local Discogs API",
+  "repository": "https://github.com/mark-rafter/LocalDiscogsApi",
+  "keywords": ["aspnet", "core"],
+  "stack": "heroku-16",
+  "buildpacks": [
+    {
+      "url": "https://github.com/mark-rafter/dotnetcore-buildpack"
+    }
+  ]
+}
